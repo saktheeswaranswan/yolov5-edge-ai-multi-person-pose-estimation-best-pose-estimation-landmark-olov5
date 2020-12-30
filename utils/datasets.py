@@ -459,6 +459,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     else:
                         ne += 1  # label empty
                         l = np.zeros((0, 5), dtype=np.float32)
+
+                    assert 2 in l[:, 0] or 3 in l[:, 0] or random.random() < 0.1, 'image rejected'
                 else:
                     nm += 1  # label missing
                     l = np.zeros((0, 5), dtype=np.float32)
