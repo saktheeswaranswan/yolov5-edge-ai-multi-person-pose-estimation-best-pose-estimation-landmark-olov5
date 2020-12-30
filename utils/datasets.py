@@ -460,11 +460,14 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                         ne += 1  # label empty
                         l = np.zeros((0, 5), dtype=np.float32)
 
-                    assert len(l), 'no objects'
-                    assert 2 in l[:, 0] or 3 in l[:, 0] or random.random() < 0.1, 'image rejected'
                 else:
                     nm += 1  # label missing
                     l = np.zeros((0, 5), dtype=np.float32)
+
+                # class filtering
+                assert len(l), 'no objects'
+                assert 2 in l[:, 0] or 3 in l[:, 0] or random.random() < 0.1, 'image rejected'
+
                 x[im_file] = [l, shape]
             except Exception as e:
                 nc += 1
