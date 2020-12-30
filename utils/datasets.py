@@ -465,8 +465,8 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                     l = np.zeros((0, 5), dtype=np.float32)
 
                 # class filtering
-                assert len(l), 'no objects'
-                assert 2 in l[:, 0] or 3 in l[:, 0] or random.random() < 0.06, 'image rejected'
+                assert len(l)
+                assert 2 in l[:, 0] or 3 in l[:, 0] or random.random() < 0.06
 
                 x[im_file] = [l, shape]
             except Exception as e:
