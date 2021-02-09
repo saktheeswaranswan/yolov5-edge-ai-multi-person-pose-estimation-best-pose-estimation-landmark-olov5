@@ -1,5 +1,6 @@
 # parameters
-nc: 80  # number of classes
+nc: 1  # number of classes
+nkpt: 0 # number of keypoints
 depth_multiple: 0.33  # model depth multiple
 width_multiple: 0.50  # layer channel multiple
 
@@ -56,5 +57,5 @@ head:
     [ [ -1, 12 ], 1, Concat, [ 1 ] ],  # cat head P6
     [ -1, 3, C3, [ 1024, False ] ],  # 32 (P6/64-xlarge)
 
-    [ [ 23, 26, 29, 32 ], 1, Detect, [ nc, anchors ] ],  # Detect(P3, P4, P5, P6)
+    [ [ 23, 26, 29, 32 ], 1, Detect, [ nc, anchors, nkpt] ],  # Detect(P3, P4, P5, P6)
   ]
