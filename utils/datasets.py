@@ -901,7 +901,7 @@ def dataset_stats(path='coco128.yaml', autodownload=False, verbose=False, profil
 
     def round_labels(labels):
         # Update labels to integer class and 6 decimal place floats
-        return [[int(c), *[round(x, 6) for x in points]] for c, *points in labels]
+        return [[int(c), *[round(x, 4) for x in points]] for c, *points in labels]
 
     def unzip(path):
         # Unzip data.zip TODO: CONSTRAINT: path/to/abc.zip MUST unzip to 'path/to/abc/'
