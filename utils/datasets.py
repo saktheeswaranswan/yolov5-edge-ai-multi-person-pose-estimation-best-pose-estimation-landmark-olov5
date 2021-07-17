@@ -912,6 +912,14 @@ def dataset_stats(path='coco128.yaml', autodownload=False, verbose=False, profil
         else:  # path is data.yaml
             return False, None, path
 
+    def hub_ops(f, max_dim=1920):
+        # HUB ops for 1 image 'f'
+        im = Image.open(f)
+        r = max_dim / max(im.height, im.width)  # ratio
+        if r < 1.0:  # image too large
+            im = im.resize((int(im.width * r), int(im.height * r)))
+        im.save(im_dir / Path(f).name, quality=75)  # save
+
     zipped, data_dir, yaml_path = unzip(Path(path))
     with open(check_file(yaml_path)) as f:
         data = yaml.safe_load(f)  # data dict
@@ -938,13 +946,8 @@ def dataset_stats(path='coco128.yaml', autodownload=False, verbose=False, profil
         if hub:
             im_dir = hub_dir / 'images'
             im_dir.mkdir(parents=True, exist_ok=True)
-            max_dim = 1920
-            for im_file in tqdm(dataset.img_files, total=dataset.n, desc='Hub image compression'):
-                im = Image.open(im_file)
-                r = max_dim / max(im.height, im.width)  # ratio
-                if r < 1.0:  # image too large
-                    im = im.resize((int(im.width * r), int(im.height * r)))
-                im.save(im_dir / Path(im_file).name, quality=75)  # save
+            for _ in tqdm(ThreadPool(num_threads).imap(hub_ops, dataset.img_files), total=dataset.n, desc='HUB Ops'):
+                pass
 
     # Profile
     stats_path = hub_dir / 'stats.json'
