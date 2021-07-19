@@ -926,7 +926,7 @@ def dataset_stats(path='coco128.yaml', autodownload=False, verbose=False, profil
             data['path'] = data_dir  # TODO: should this be dir.resolve()?
     check_dataset(data, autodownload)  # download dataset if missing
     hub_dir = Path(data['path'] + ('-hub' if hub else ''))
-    stats = {'yaml': data}  # statistics dictionary
+    stats = {'nc': data['nc'], 'names': data['names']}  # statistics dictionary
     for split in 'train', 'val', 'test':
         if data.get(split) is None:
             stats[split] = None  # i.e. no test set
@@ -945,7 +945,7 @@ def dataset_stats(path='coco128.yaml', autodownload=False, verbose=False, profil
         if hub:
             im_dir = hub_dir / 'images'
             im_dir.mkdir(parents=True, exist_ok=True)
-            for _ in tqdm(ThreadPool(num_threads).imap(hub_ops, dataset.img_files), total=dataset.n, desc='HUB Ops'):
+            for _ in tqdm(ThreadPool(NUM_THREADS).imap(hub_ops, dataset.img_files), total=dataset.n, desc='HUB Ops'):
                 pass
 
     # Profile
