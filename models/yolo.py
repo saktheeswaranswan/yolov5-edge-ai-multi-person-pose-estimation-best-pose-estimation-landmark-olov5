@@ -9,6 +9,8 @@ import sys
 from copy import deepcopy
 from pathlib import Path
 
+import thop  # for FLOPs
+
 FILE = Path(__file__).absolute()
 sys.path.append(FILE.parents[1].as_posix())  # add yolov5/ to path
 
@@ -19,11 +21,6 @@ from utils.general import make_divisible, check_file, set_logging
 from utils.plots import feature_visualization
 from utils.torch_utils import time_sync, fuse_conv_and_bn, model_info, scale_img, initialize_weights, \
     select_device, copy_attr
-
-try:
-    import thop  # for FLOPs computation
-except ImportError:
-    thop = None
 
 LOGGER = logging.getLogger(__name__)
 
@@ -141,7 +138,7 @@ class Model(nn.Module):
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
 
             if profile:
-                o = thop.profile(m, inputs=(x,), verbose=False)[0] / 1E9 * 2 if thop else 0  # FLOPs
+                o = thop.profile(m, inputs=(x,), verbose=False)[0] / 1E9 * 2  # FLOPs
                 t = time_sync()
                 for _ in range(10):
                     _ = m(x)
