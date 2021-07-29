@@ -14,7 +14,7 @@ from PIL import Image
 from torch.cuda import amp
 
 from utils.datasets import exif_transpose, letterbox
-from utils.general import non_max_suppression, make_divisible, scale_coords, increment_path, xyxy2xywh, save_one_box
+from utils.general import non_max_suppression, non_max_suppression_export,make_divisible, scale_coords, increment_path, xyxy2xywh, save_one_box
 from utils.plots import colors, plot_one_box
 from utils.torch_utils import time_sync
 
@@ -39,7 +39,7 @@ class Conv(nn.Module):
         super().__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p), groups=g, bias=False)
         self.bn = nn.BatchNorm2d(c2)
-        self.act = nn.SiLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        self.act = nn.ReLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
 
     def forward(self, x):
         return self.act(self.bn(self.conv(x)))
@@ -107,7 +107,7 @@ class BottleneckCSP(nn.Module):
         self.cv3 = nn.Conv2d(c_, c_, 1, 1, bias=False)
         self.cv4 = Conv(2 * c_, c2, 1, 1)
         self.bn = nn.BatchNorm2d(2 * c_)  # applied to cat(cv2, cv3)
-        self.act = nn.LeakyReLU(0.1, inplace=True)
+        self.act = nn.ReLU(inplace=True)
         self.m = nn.Sequential(*[Bottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)])
 
     def forward(self, x):
@@ -154,7 +154,14 @@ class SPP(nn.Module):
         c_ = c1 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, 1, 1)
         self.cv2 = Conv(c_ * (len(k) + 1), c2, 1, 1)
-        self.m = nn.ModuleList([nn.MaxPool2d(kernel_size=x, stride=1, padding=x // 2) for x in k])
+        num_3x3_maxpool = []
+        max_pool_module_list = []
+        for pool_kernel in k:
+            assert (pool_kernel-3)%2==0; "Required Kernel size cannot be implemented with kernel_size of 3"
+            num_3x3_maxpool = 1 + (pool_kernel-3)//2
+            max_pool_module_list.append(nn.Sequential(*num_3x3_maxpool*[nn.MaxPool2d(kernel_size=3, stride=1, padding=1)]))
+            #max_pool_module_list[-1] = nn.ModuleList(max_pool_module_list[-1])
+        self.m = nn.ModuleList(max_pool_module_list)
 
     def forward(self, x):
         x = self.cv1(x)
@@ -164,12 +171,19 @@ class SPP(nn.Module):
 class Focus(nn.Module):
     # Focus wh information into c-space
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):  # ch_in, ch_out, kernel, stride, padding, groups
-        super().__init__()
+        super(Focus, self).__init__()
+        slice_kernel = 3
+        slice_stride = 2
+        self.conv_slice = Conv(c1, c1*4, slice_kernel, slice_stride, p, g, act)
         self.conv = Conv(c1 * 4, c2, k, s, p, g, act)
         # self.contract = Contract(gain=2)
 
     def forward(self, x):  # x(b,c,w,h) -> y(b,4c,w/2,h/2)
-        return self.conv(torch.cat([x[..., ::2, ::2], x[..., 1::2, ::2], x[..., ::2, 1::2], x[..., 1::2, 1::2]], 1))
+        #return self.conv(torch.cat([x[..., ::2, ::2], x[..., 1::2, ::2], x[..., ::2, 1::2], x[..., 1::2, 1::2]], 1))
+        #replace slice operations with conv
+        x = self.conv_slice(x)
+        x = self.conv(x)
+        return x
         # return self.conv(self.contract(x))
 
 
@@ -281,6 +295,31 @@ class AutoShape(nn.Module):
 
             t.append(time_sync())
             return Detections(imgs, y, files, t, self.names, x.shape)
+
+class NMS(nn.Module):
+    # Non-Maximum Suppression (NMS) module
+    iou = 0.45  # IoU threshold
+    classes = None  # (optional list) filter by class
+
+    def __init__(self, conf=0.25):
+        super(NMS, self).__init__()
+        self.conf=conf
+
+    def forward(self, x):
+        return non_max_suppression(x[0], conf_thres=self.conf, iou_thres=self.iou, classes=self.classes)
+
+
+class NMS_Export(nn.Module):
+    # Non-Maximum Suppression (NMS) module used while exporting ONNX model
+    iou = 0.45  # IoU threshold
+    classes = None  # (optional list) filter by class
+
+    def __init__(self, conf=0.001):
+        super(NMS_Export, self).__init__()
+        self.conf = conf
+
+    def forward(self, x):
+        return non_max_suppression_export(x[0], conf_thres=self.conf, iou_thres=self.iou, classes=self.classes)
 
 
 class Detections:

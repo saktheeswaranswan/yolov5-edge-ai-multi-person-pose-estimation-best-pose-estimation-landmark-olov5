@@ -16,6 +16,7 @@ from torch.utils.mobile_optimizer import optimize_for_mobile
 FILE = Path(__file__).absolute()
 sys.path.append(FILE.parents[0].as_posix())  # add yolov5/ to path
 
+from models.common import NMS, NMS_Export
 from models.common import Conv
 from models.yolo import Detect
 from models.experimental import attempt_load
@@ -38,7 +39,7 @@ def export_torchscript(model, img, file, optimize):
         print(f'{prefix} export failure: {e}')
 
 
-def export_onnx(model, img, file, opset, train, dynamic, simplify):
+def export_onnx(model, img, file, opset, train, dynamic, simplify, output_names=None):
     # ONNX model export
     prefix = colorstr('ONNX:')
     try:
@@ -51,7 +52,7 @@ def export_onnx(model, img, file, opset, train, dynamic, simplify):
                           training=torch.onnx.TrainingMode.TRAINING if train else torch.onnx.TrainingMode.EVAL,
                           do_constant_folding=not train,
                           input_names=['images'],
-                          output_names=['output'],
+                          output_names=['output'] if output_names is None else output_names,
                           dynamic_axes={'images': {0: 'batch', 2: 'height', 3: 'width'},  # shape(1,3,640,640)
                                         'output': {0: 'batch', 1: 'anchors'}  # shape(1,25200,85)
                                         } if dynamic else None)
@@ -110,6 +111,7 @@ def run(weights='./yolov5s.pt',  # weights path
         dynamic=False,  # ONNX: dynamic axes
         simplify=False,  # ONNX: simplify model
         opset=12,  # ONNX: opset version
+        export_nms=False,
         ):
     t = time.time()
     include = [x.lower() for x in include]
@@ -146,11 +148,20 @@ def run(weights='./yolov5s.pt',  # weights path
         y = model(img)  # dry runs
     print(f"\n{colorstr('PyTorch:')} starting from {weights} ({file_size(weights):.1f} MB)")
 
+    if export_nms:
+        nms = NMS(conf=0.001)
+        nms_export = NMS_Export(conf=0.001)
+        y_export = nms_export(y)
+        y = nms(y)
+        assert (torch.sum(torch.abs(y_export[0]-y[0]))<1e-6)
+        model = torch.nn.Sequential(model, nms_export)
+        output_names = ['detections']
+
     # Exports
     if 'torchscript' in include:
         export_torchscript(model, img, file, optimize)
     if 'onnx' in include:
-        export_onnx(model, img, file, opset, train, dynamic, simplify)
+        export_onnx(model, img, file, opset, train, dynamic, simplify, output_names)
     if 'coreml' in include:
         export_coreml(model, img, file)
 
@@ -172,6 +183,7 @@ def parse_opt():
     parser.add_argument('--dynamic', action='store_true', help='ONNX: dynamic axes')
     parser.add_argument('--simplify', action='store_true', help='ONNX: simplify model')
     parser.add_argument('--opset', type=int, default=12, help='ONNX: opset version')
+    parser.add_argument('--export-nms', action='store_true', help='export the nms part in ONNX model')  # ONNX-only, #opt.grid has to be set True for nms export to work
     opt = parser.parse_args()
     return opt
 

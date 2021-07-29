@@ -389,6 +389,18 @@ def xywh2xyxy(x):
     return y
 
 
+def xywh2xyxy_export(cx,cy,w,h):
+    #This function is used while exporting ONNX models
+    # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
+    #y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
+    halfw = w/2
+    halfh = h/2
+    xmin = cx - halfw  # top left x
+    ymin = cy - halfh  # top left y
+    xmax = cx + halfw  # bottom right x
+    ymax = cy + halfh  # bottom right y
+    return torch.cat((xmin, ymin, xmax, ymax), 1)
+
 def xywhn2xyxy(x, w=640, h=640, padw=0, padh=0):
     # Convert nx4 boxes from [x, y, w, h] normalized to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
     y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
@@ -451,12 +463,13 @@ def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
         gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
         pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
     else:
-        gain = ratio_pad[0][0]
+        gain = ratio_pad[0]
         pad = ratio_pad[1]
 
     coords[:, [0, 2]] -= pad[0]  # x padding
     coords[:, [1, 3]] -= pad[1]  # y padding
-    coords[:, :4] /= gain
+    coords[:, [0, 2]] /= gain[1]
+    coords[:, [1, 3]] /= gain[0]
     clip_coords(coords, img0_shape)
     return coords
 
@@ -564,6 +577,34 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
             print(f'WARNING: NMS time limit {time_limit}s exceeded')
             break  # time limit exceeded
 
+    return output
+
+
+def non_max_suppression_export(prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False, multi_label=False,
+                        labels=()):
+    """Runs Non-Maximum Suppression (NMS) on inference results
+
+    Returns:
+         list of detections, on (n,6) tensor per image [xyxy, conf, cls]
+    """
+    min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
+    xc = prediction[..., 4] > conf_thres  # candidates
+    output = [torch.zeros((0, 6), device=prediction.device)] * prediction.shape[0]
+    for xi, x in enumerate(prediction):  # image index, image inference
+        x = x[xc[xi]]  # confidence
+        # Compute conf
+        cx, cy, w, h = x[:,0:1], x[:,1:2], x[:,2:3], x[:,3:4]
+        obj_conf = x[:,4:5]
+        cls_conf = x[:,5:]
+        cls_conf = obj_conf * cls_conf  # conf = obj_conf * cls_conf
+        # Box (center x, center y, width, height) to (x1, y1, x2, y2)
+        box = xywh2xyxy_export(cx, cy, w, h)
+        conf, j = cls_conf.max(1, keepdim=True)
+        x = torch.cat((box, conf, j.float()), 1)[conf.view(-1) > conf_thres]
+        c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
+        boxes, scores = x[:, :4] +c , x[:, 4]  # boxes (offset by class), scores
+        i = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
+        output[xi] = x[i]
     return output
 
 
