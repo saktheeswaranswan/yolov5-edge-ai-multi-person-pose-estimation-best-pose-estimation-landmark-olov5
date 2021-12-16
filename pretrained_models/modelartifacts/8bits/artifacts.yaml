@@ -1,28 +1,32 @@
 od-8100_onnxrt:
-  model_name: weights_yolov5s6_640_ti_lite_37p4_56p0.onnx
+  model_name: ONR-OD-8100-yolov5-s6-ti-lite-coco-640x640
+  recommended: false
   run_dir: od-8100_onnxrt_weights_yolov5s6_640_ti_lite_37p4_56p0_onnx
   session_name: onnxrt
   shortlisted: true
-  size: 51596848
+  size: 51608959
   task_type: detection
 od-8110_onnxrt:
-  model_name: weights_yolov5s6_384_ti_lite_32p8_51p2.onnx
+  model_name: ONR-OD-8110-yolov5-s6-ti-lite-coco-384x384
+  recommended: false
   run_dir: od-8110_onnxrt_weights_yolov5s6_384_ti_lite_32p8_51p2_onnx
   session_name: onnxrt
   shortlisted: true
-  size: 51397030
+  size: 51404863
   task_type: detection
 od-8120_onnxrt:
-  model_name: weights_yolov5m6_640_ti_lite_44p1_62p9.onnx
+  model_name: ONR-OD-8120-yolov5-m6-ti-lite-coco-640x640
+  recommended: false
   run_dir: od-8120_onnxrt_weights_yolov5m6_640_ti_lite_44p1_62p9_onnx
   session_name: onnxrt
-  shortlisted: true
-  size: 141679412
+  shortlisted: false
+  size: 141703361
   task_type: detection
 od-8130_onnxrt:
-  model_name: weights_yolov5l6_640_ti_lite_47p1_65p6.onnx
+  model_name: ONR-OD-8130-yolov5-l6-ti-lite-coco-640x640
+  recommended: false
   run_dir: od-8130_onnxrt_weights_yolov5l6_640_ti_lite_47p1_65p6_onnx
   session_name: onnxrt
   shortlisted: false
-  size: 299842909
+  size: 299199158
   task_type: detection

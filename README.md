@@ -10,14 +10,14 @@ This repository is based on [ultralytics/yolov5](https://github.com/ultralytics/
 
 ## **Official Models from Ultralytics**
 
-|Dataset |Model Name                      |Input Size |GigaMACS  |AP[0.5:0.95]%| AP50%|Notes |
+|Dataset |Model Name                      |Input Size |GFLOPS  |AP[0.5:0.95]%| AP50%|Notes |
 |--------|------------------------------- |-----------|----------|-------------|------|----- |
-|COCO    |Yolov5s6                        |1280x1280  |**34.8** |   43.3      | 61.9 |
-|COCO    |Yolov5s6_640                    |640x640    |**8.7**  |   38.9      | 56.8 |(Train@ 1280, val@640) |
-|COCO    |Yolov5m6                        |1280x1280  |**104.8**|   50.5      | 68.7 |       |
-|COCO    |Yolov5m6_640                    |640x640    |**26.2** |   45.4      | 63.6 |(Train@ 1280, val@640) |
-|COCO    |Yolov5l6                        |1280x1280  |**235.4**|   53.4      | 71.1 |       |
-|COCO    |Yolov5l6_640                    |640x640    |**58.85**|   49.0      | 67.0 |(Train@ 1280, val@640) |
+|COCO    |Yolov5s6                        |1280x1280  |**69.6** |   43.3      | 61.9 |
+|COCO    |Yolov5s6_640                    |640x640    |**17.4**  |   38.9      | 56.8 |(Train@ 1280, val@640) |
+|COCO    |Yolov5m6                        |1280x1280  |**209.6**|   50.5      | 68.7 |       |
+|COCO    |Yolov5m6_640                    |640x640    |**52.4** |   45.4      | 63.6 |(Train@ 1280, val@640) |
+|COCO    |Yolov5l6                        |1280x1280  |**470.8**|   53.4      | 71.1 |       |
+|COCO    |Yolov5l6_640                    |640x640    |**117.7**|   49.0      | 67.0 |(Train@ 1280, val@640) |
 
 <br/>
 
@@ -91,7 +91,7 @@ python test.py --data coco.yaml --img 512 --conf 0.001 --iou 0.65 --weights pret
 ###  **ONNX export including detection:**
 * Run the following command to export the entire models including the detection part, 
 ``` 
-    python models/export.py --weights pretrained_models/yolov5s6_640_ti_lite/weights/best.pt  --img 640 --batch 1 --simplify --export-nms --opset 11 # export at 640x640 with batch size 1
+    python export.py --weights pretrained_models/yolov5s6_640_ti_lite/weights/best.pt  --img 640 --batch 1 --simplify --export-nms --opset 11 # export at 640x640 with batch size 1
 ```
 
 ## **References**

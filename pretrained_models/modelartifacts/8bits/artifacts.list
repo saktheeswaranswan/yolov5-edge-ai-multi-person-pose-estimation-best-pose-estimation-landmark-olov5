@@ -1,5 +1,5 @@
-task_type,session_name,run_dir,model_name,size,shortlisted
-detection,onnxrt,od-8100_onnxrt_weights_yolov5s6_640_ti_lite_37p4_56p0_onnx,weights_yolov5s6_640_ti_lite_37p4_56p0.onnx,51596848,True
-detection,onnxrt,od-8110_onnxrt_weights_yolov5s6_384_ti_lite_32p8_51p2_onnx,weights_yolov5s6_384_ti_lite_32p8_51p2.onnx,51397030,True
-detection,onnxrt,od-8120_onnxrt_weights_yolov5m6_640_ti_lite_44p1_62p9_onnx,weights_yolov5m6_640_ti_lite_44p1_62p9.onnx,141679412,True
-detection,onnxrt,od-8130_onnxrt_weights_yolov5l6_640_ti_lite_47p1_65p6_onnx,weights_yolov5l6_640_ti_lite_47p1_65p6.onnx,299842909,False
+task_type,session_name,run_dir,model_name,size,shortlisted,recommended
+detection,onnxrt,od-8100_onnxrt_weights_yolov5s6_640_ti_lite_37p4_56p0_onnx,ONR-OD-8100-yolov5-s6-ti-lite-coco-640x640,51608959,True,False
+detection,onnxrt,od-8110_onnxrt_weights_yolov5s6_384_ti_lite_32p8_51p2_onnx,ONR-OD-8110-yolov5-s6-ti-lite-coco-384x384,51404863,True,False
+detection,onnxrt,od-8120_onnxrt_weights_yolov5m6_640_ti_lite_44p1_62p9_onnx,ONR-OD-8120-yolov5-m6-ti-lite-coco-640x640,141703361,False,False
+detection,onnxrt,od-8130_onnxrt_weights_yolov5l6_640_ti_lite_47p1_65p6_onnx,ONR-OD-8130-yolov5-l6-ti-lite-coco-640x640,299199158,False,False
