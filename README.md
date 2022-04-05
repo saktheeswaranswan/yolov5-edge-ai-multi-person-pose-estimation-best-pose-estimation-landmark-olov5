@@ -93,6 +93,7 @@ python test.py --data coco.yaml --img 512 --conf 0.001 --iou 0.65 --weights pret
 ``` 
     python export.py --weights pretrained_models/yolov5s6_640_ti_lite/weights/best.pt  --img 640 --batch 1 --simplify --export-nms --opset 11 # export at 640x640 with batch size 1
 ```
+* Apart from exporting the complete ONNX model, above script will generate a prototxt file that contains information of the detection layer. This prototxt file is required to deploy the moodel on TI SoC.
 
 ## **References**
 
@@ -103,4 +104,5 @@ python test.py --data coco.yaml --img 512 --conf 0.001 --iou 0.65 --weights pret
 [5] Chien-Yao Wang, Hong-Yuan Mark Liao, Yueh-Hua Wu, Ping-Yang Chen, Jun-Wei Hsieh, and I-Hau Yeh. [CSPNet: A new backbone that can enhance learning capability of
 cnn](https://arxiv.org/abs/1911.11929). Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition Workshop (CVPR Workshop),2020. <br>
 [6]Shu Liu, Lu Qi, Haifang Qin, Jianping Shi, and Jiaya Jia. [Path aggregation network for instance segmentation](https://arxiv.org/abs/1803.01534). In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR), pages 8759–8768, 2018 <br>
-[7] [Efficientnet-lite quantization](https://blog.tensorflow.org/2020/03/higher-accuracy-on-vision-models-with-efficientnet-lite.html)
+[7] [Efficientnet-lite quantization](https://blog.tensorflow.org/2020/03/higher-accuracy-on-vision-models-with-efficientnet-lite.html) <br>
+[8] [YOLOv5 Training video from Texas Instruments] (https://training.ti.com/process-efficient-object-detection-using-yolov5-and-tda4x-processors) 

@@ -1,32 +1,40 @@
 od-8100_onnxrt:
   model_name: ONR-OD-8100-yolov5-s6-ti-lite-coco-640x640
   recommended: false
-  run_dir: od-8100_onnxrt_weights_yolov5s6_640_ti_lite_37p4_56p0_onnx
+  run_dir: od-8100_onnxrt_coco_edgeai-yolov5_yolov5s6_640_ti_lite_37p4_56p0_onnx
   session_name: onnxrt
   shortlisted: true
-  size: 51608959
+  size: 51612886
   task_type: detection
 od-8110_onnxrt:
   model_name: ONR-OD-8110-yolov5-s6-ti-lite-coco-384x384
   recommended: false
-  run_dir: od-8110_onnxrt_weights_yolov5s6_384_ti_lite_32p8_51p2_onnx
+  run_dir: od-8110_onnxrt_coco_edgeai-yolov5_yolov5s6_384_ti_lite_32p8_51p2_onnx
   session_name: onnxrt
   shortlisted: true
-  size: 51404863
+  size: 51406597
   task_type: detection
 od-8120_onnxrt:
   model_name: ONR-OD-8120-yolov5-m6-ti-lite-coco-640x640
   recommended: false
-  run_dir: od-8120_onnxrt_weights_yolov5m6_640_ti_lite_44p1_62p9_onnx
+  run_dir: od-8120_onnxrt_coco_edgeai-yolov5_yolov5m6_640_ti_lite_44p1_62p9_onnx
   session_name: onnxrt
-  shortlisted: false
-  size: 141703361
+  shortlisted: true
+  size: 141740710
   task_type: detection
 od-8130_onnxrt:
   model_name: ONR-OD-8130-yolov5-l6-ti-lite-coco-640x640
   recommended: false
-  run_dir: od-8130_onnxrt_weights_yolov5l6_640_ti_lite_47p1_65p6_onnx
+  run_dir: od-8130_onnxrt_coco_edgeai-yolov5_yolov5l6_640_ti_lite_47p1_65p6_onnx
   session_name: onnxrt
-  shortlisted: false
-  size: 299199158
+  shortlisted: true
+  size: 299744941
+  task_type: detection
+od-8450_onnxrt:
+  model_name: ONR-OD-8450-yolov5-s6-ti-lite-widerface-640x640
+  recommended: false
+  run_dir: od-8450_onnxrt_widerface_edgeai-yolov5_yolov5s6_640_ti_lite_71p53_onnx
+  session_name: onnxrt
+  shortlisted: true
+  size: 50684177
   task_type: detection

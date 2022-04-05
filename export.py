@@ -23,6 +23,10 @@ from models.experimental import attempt_load
 from utils.activations import Hardswish, SiLU
 from utils.general import colorstr, check_img_size, check_requirements, file_size, set_logging
 from utils.torch_utils import select_device
+from utils.proto.pytorch2proto import prepare_model_for_layer_outputs, retrieve_onnx_names
+
+from utils.proto import mmdet_meta_arch_pb2
+from google.protobuf import text_format
 
 
 def export_torchscript(model, img, file, optimize):
@@ -80,6 +84,48 @@ def export_onnx(model, img, file, opset, train, dynamic, simplify, output_names=
         print(f"{prefix} run --dynamic ONNX model inference with detect.py: 'python detect.py --weights {f}'")
     except Exception as e:
         print(f'{prefix} export failure: {e}')
+
+
+def export_prototxt(model, img, file):
+    # Prototxt export for a given ONNX model
+    prefix = colorstr('Prototxt:')
+    onnx_model_name = str(file.with_suffix('.onnx'))
+
+    for module in model.modules():
+        if isinstance(module, Detect):
+            anchor_grid = torch.squeeze(module.anchor_grid)
+            break
+    num_heads = anchor_grid.shape[0]
+    matched_names = retrieve_onnx_names(img, model, onnx_model_name)
+    prototxt_name = onnx_model_name.replace('onnx', 'prototxt')
+
+    background_label_id = -1
+    num_classes = model.nc
+    assert len(matched_names) == num_heads; "There must be a matched name for each head"
+    proto_names = [f'{matched_names[i]}' for i in range(num_heads)]
+    yolo_params = []
+    for head_id in range(num_heads):
+        yolo_param = mmdet_meta_arch_pb2.TIDLYoloParams(input=proto_names[head_id],
+                                                        anchor_width=anchor_grid[head_id,:,0],
+                                                        anchor_height=anchor_grid[head_id,:,1])
+        yolo_params.append(yolo_param)
+
+    nms_param = mmdet_meta_arch_pb2.TIDLNmsParam(nms_threshold=0.65, top_k=30000)
+    detection_output_param = mmdet_meta_arch_pb2.TIDLOdPostProc(num_classes=num_classes, share_location=True,
+                                            background_label_id=background_label_id, nms_param=nms_param,
+                                            code_type=mmdet_meta_arch_pb2.CODE_TYPE_YOLO_V5, keep_top_k=300,
+                                            confidence_threshold=0.005)
+
+    yolov3 = mmdet_meta_arch_pb2.TidlYoloOd(name='yolo_v3', output=["detections"],
+                                            in_width=img.shape[3], in_height=img.shape[2],
+                                            yolo_param=yolo_params,
+                                            detection_output_param=detection_output_param,
+                                            )
+    arch = mmdet_meta_arch_pb2.TIDLMetaArch(name='yolo_v3', tidl_yolo=[yolov3])
+
+    with open(prototxt_name, 'wt') as pfile:
+        txt_message = text_format.MessageToString(arch)
+        pfile.write(txt_message)
 
 
 def export_coreml(model, img, file):
@@ -154,14 +200,21 @@ def run(weights='./yolov5s.pt',  # weights path
         y_export = nms_export(y)
         y = nms(y)
         assert (torch.sum(torch.abs(y_export[0]-y[0]))<1e-6)
-        model = torch.nn.Sequential(model, nms_export)
+        model_nms = torch.nn.Sequential(model, nms_export)
+        model_nms.train() if train else model_nms.eval()
         output_names = ['detections']
 
     # Exports
     if 'torchscript' in include:
         export_torchscript(model, img, file, optimize)
     if 'onnx' in include:
-        export_onnx(model, img, file, opset, train, dynamic, simplify, output_names)
+        if export_nms:
+            export_onnx(model_nms, img, file, opset, train, dynamic, simplify, output_names)
+        else:
+            export_onnx(model, img, file, opset, train, dynamic, simplify)
+
+        export_prototxt(model, img, file)
+
     if 'coreml' in include:
         export_coreml(model, img, file)
 

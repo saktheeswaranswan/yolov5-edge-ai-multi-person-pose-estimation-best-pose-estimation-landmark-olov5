@@ -1,0 +1,6 @@
+task_type,session_name,run_dir,model_name,size,shortlisted,recommended
+detection,onnxrt,od-8100_onnxrt_coco_edgeai-yolov5_yolov5s6_640_ti_lite_37p4_56p0_onnx,ONR-OD-8100-yolov5-s6-ti-lite-coco-640x640,51612886,True,False
+detection,onnxrt,od-8110_onnxrt_coco_edgeai-yolov5_yolov5s6_384_ti_lite_32p8_51p2_onnx,ONR-OD-8110-yolov5-s6-ti-lite-coco-384x384,51406597,True,False
+detection,onnxrt,od-8120_onnxrt_coco_edgeai-yolov5_yolov5m6_640_ti_lite_44p1_62p9_onnx,ONR-OD-8120-yolov5-m6-ti-lite-coco-640x640,141740710,True,False
+detection,onnxrt,od-8130_onnxrt_coco_edgeai-yolov5_yolov5l6_640_ti_lite_47p1_65p6_onnx,ONR-OD-8130-yolov5-l6-ti-lite-coco-640x640,299744941,True,False
+detection,onnxrt,od-8450_onnxrt_widerface_edgeai-yolov5_yolov5s6_640_ti_lite_71p53_onnx,ONR-OD-8450-yolov5-s6-ti-lite-widerface-640x640,50684177,True,False
