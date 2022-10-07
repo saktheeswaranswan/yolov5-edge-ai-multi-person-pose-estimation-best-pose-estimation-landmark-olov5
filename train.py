@@ -442,6 +442,7 @@ def parse_opt(known=False):
     parser.add_argument('--save_period', type=int, default=-1, help='Log model after every "save_period" epoch')
     parser.add_argument('--artifact_alias', type=str, default="latest", help='version of dataset artifact to be used')
     parser.add_argument('--local_rank', type=int, default=-1, help='DDP parameter, do not modify')
+    parser.add_argument("--disable_git_status", default=False, action="store_true", help="disable git status check")
     opt = parser.parse_known_args()[0] if known else parser.parse_args()
     return opt
 
@@ -450,7 +451,8 @@ def main(opt):
     set_logging(RANK)
     if RANK in [-1, 0]:
         print(colorstr('train: ') + ', '.join(f'{k}={v}' for k, v in vars(opt).items()))
-        check_git_status()
+        if not opt.disable_git_status:
+            check_git_status()
         check_requirements(exclude=['thop'])
 
     # Resume
