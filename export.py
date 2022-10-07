@@ -86,7 +86,7 @@ def export_onnx(model, img, file, opset, train, dynamic, simplify, output_names=
         print(f'{prefix} export failure: {e}')
 
 
-def export_prototxt(model, img, file):
+def export_prototxt(model, img, file, simple_search):
     # Prototxt export for a given ONNX model
     prefix = colorstr('Prototxt:')
     onnx_model_name = str(file.with_suffix('.onnx'))
@@ -96,7 +96,7 @@ def export_prototxt(model, img, file):
             anchor_grid = torch.squeeze(module.anchor_grid)
             break
     num_heads = anchor_grid.shape[0]
-    matched_names = retrieve_onnx_names(img, model, onnx_model_name)
+    matched_names = retrieve_onnx_names(img, model, onnx_model_name, simple_search=simple_search)
     prototxt_name = onnx_model_name.replace('onnx', 'prototxt')
 
     background_label_id = -1
@@ -158,6 +158,7 @@ def run(weights='./yolov5s.pt',  # weights path
         simplify=False,  # ONNX: simplify model
         opset=12,  # ONNX: opset version
         export_nms=False,
+        simple_search=False
         ):
     t = time.time()
     include = [x.lower() for x in include]
@@ -197,9 +198,9 @@ def run(weights='./yolov5s.pt',  # weights path
     if export_nms:
         nms = NMS(conf=0.001)
         nms_export = NMS_Export(conf=0.001)
-        y_export = nms_export(y)
-        y = nms(y)
-        assert (torch.sum(torch.abs(y_export[0]-y[0]))<1e-6)
+        #y_export = nms_export(y)
+        #y = nms(y)
+        #assert (torch.sum(torch.abs(y_export[0]-y[0]))<1e-6)
         model_nms = torch.nn.Sequential(model, nms_export)
         model_nms.train() if train else model_nms.eval()
         output_names = ['detections']
@@ -213,7 +214,7 @@ def run(weights='./yolov5s.pt',  # weights path
         else:
             export_onnx(model, img, file, opset, train, dynamic, simplify)
 
-        export_prototxt(model, img, file)
+        export_prototxt(model, img, file, simple_search)
 
     if 'coreml' in include:
         export_coreml(model, img, file)

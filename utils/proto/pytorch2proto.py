@@ -30,7 +30,6 @@
 import os
 import numpy as np
 
-import mmcv
 import onnx
 import torch
 #from xmmdet.utils import save_model_proto
@@ -79,38 +78,41 @@ def similar_tensor(t1, t2, rtol=1.e-3, atol=1.e-3):
     return is_close
 
 
-def retrieve_onnx_names(input_data, partial_model_path, full_model_path):
+def retrieve_onnx_names(input_data, partial_model_path, full_model_path, simple_search=False):
     import onnxruntime
     full_model_path_tmp = f'{full_model_path}.tmp'
     full_output_names = prepare_model_for_layer_outputs(full_model_path, full_model_path_tmp, export_layer_types='Conv')
-    full_infer = onnxruntime.InferenceSession(full_model_path_tmp)
-    full_input_name = full_infer.get_inputs()[0].name
+    if not simple_search:
+        full_infer = onnxruntime.InferenceSession(full_model_path_tmp)
+        full_input_name = full_infer.get_inputs()[0].name
 
 
-    # partial_infer = onnxruntime.InferenceSession(partial_model_path)
-    # partial_input_name = partial_infer.get_inputs()[0].name
-    # partial_output_names = [o.name for o in partial_infer.get_outputs()]
+        # partial_infer = onnxruntime.InferenceSession(partial_model_path)
+        # partial_input_name = partial_infer.get_inputs()[0].name
+        # partial_output_names = [o.name for o in partial_infer.get_outputs()]
 
-    input_numpy = input_data.detach().numpy() if isinstance(input_data, torch.Tensor) else input_data
-    full_outputs = full_infer.run(full_output_names, {full_input_name:input_numpy})
-    partial_outputs = partial_model_path(input_data)[1]
+        input_numpy = input_data.detach().numpy() if isinstance(input_data, torch.Tensor) else input_data
+        full_outputs = full_infer.run(full_output_names, {full_input_name:input_numpy})
+        partial_outputs = partial_model_path(input_data)[1]
 
-    matched_names = []
-    for po in partial_outputs:
-        matched_name = None
-        bs, na, ny, nx, no = po.shape
-        po = po.permute(0, 1, 4, 2, 3).contiguous()
-        po = po.view(bs, na * no, ny, nx)  # (bs, na, ny, nx, no) -> (bs, na, no, ny, nx)
-        for fname, fo in zip(full_output_names, full_outputs):
-            if similar_tensor(po, fo):
-                matched_name = fname
-                continue
+        matched_names = []
+        for po in partial_outputs:
+            matched_name = None
+            bs, na, ny, nx, no = po.shape
+            po = po.permute(0, 1, 4, 2, 3).contiguous()
+            po = po.view(bs, na * no, ny, nx)  # (bs, na, ny, nx, no) -> (bs, na, no, ny, nx)
+            for fname, fo in zip(full_output_names, full_outputs):
+                if similar_tensor(po, fo):
+                    matched_name = fname
+                    continue
+                #
             #
-        #
-        if matched_name is None:
-            return None
-        #
-        matched_names.append(matched_name)
+            if matched_name is None:
+                return None
+            #
+            matched_names.append(matched_name)
+    else:
+        matched_names = full_output_names[1:]
     #
     os.remove(full_model_path_tmp)
     return matched_names
