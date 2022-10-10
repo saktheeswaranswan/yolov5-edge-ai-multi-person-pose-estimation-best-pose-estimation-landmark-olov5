@@ -25,7 +25,7 @@ from utils.general import colorstr, check_img_size, check_requirements, file_siz
 from utils.torch_utils import select_device
 from utils.proto.pytorch2proto import prepare_model_for_layer_outputs, retrieve_onnx_names
 
-from utils.proto import mmdet_meta_arch_pb2
+from utils.proto import tidl_meta_arch_yolov5_pb2
 from google.protobuf import text_format
 
 
@@ -105,23 +105,23 @@ def export_prototxt(model, img, file, simple_search):
     proto_names = [f'{matched_names[i]}' for i in range(num_heads)]
     yolo_params = []
     for head_id in range(num_heads):
-        yolo_param = mmdet_meta_arch_pb2.TIDLYoloParams(input=proto_names[head_id],
+        yolo_param = tidl_meta_arch_yolov5_pb2.TIDLYoloParams(input=proto_names[head_id],
                                                         anchor_width=anchor_grid[head_id,:,0],
                                                         anchor_height=anchor_grid[head_id,:,1])
         yolo_params.append(yolo_param)
 
-    nms_param = mmdet_meta_arch_pb2.TIDLNmsParam(nms_threshold=0.65, top_k=30000)
-    detection_output_param = mmdet_meta_arch_pb2.TIDLOdPostProc(num_classes=num_classes, share_location=True,
+    nms_param = tidl_meta_arch_yolov5_pb2.TIDLNmsParam(nms_threshold=0.65, top_k=30000)
+    detection_output_param = tidl_meta_arch_yolov5_pb2.TIDLOdPostProc(num_classes=num_classes, share_location=True,
                                             background_label_id=background_label_id, nms_param=nms_param,
-                                            code_type=mmdet_meta_arch_pb2.CODE_TYPE_YOLO_V5, keep_top_k=300,
+                                            code_type=tidl_meta_arch_yolov5_pb2.CODE_TYPE_YOLO_V5, keep_top_k=300,
                                             confidence_threshold=0.005)
 
-    yolov3 = mmdet_meta_arch_pb2.TidlYoloOd(name='yolo_v3', output=["detections"],
+    yolov3 = tidl_meta_arch_yolov5_pb2.TidlYoloOd(name='yolo_v3', output=["detections"],
                                             in_width=img.shape[3], in_height=img.shape[2],
                                             yolo_param=yolo_params,
                                             detection_output_param=detection_output_param,
                                             )
-    arch = mmdet_meta_arch_pb2.TIDLMetaArch(name='yolo_v3', tidl_yolo=[yolov3])
+    arch = tidl_meta_arch_yolov5_pb2.TIDLMetaArch(name='yolo_v3', tidl_yolo=[yolov3])
 
     with open(prototxt_name, 'wt') as pfile:
         txt_message = text_format.MessageToString(arch)
