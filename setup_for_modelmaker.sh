@@ -6,5 +6,5 @@ sudo apt install cmake>=3.22
 pip3 install -r requirements_modelmaker.txt
 
 # there as issue with installing pillow-simd through requirements - force it here
-pip uninstall pillow
+pip uninstall --yes pillow
 pip install --no-input -U --force-reinstall pillow-simd
