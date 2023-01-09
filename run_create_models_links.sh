@@ -28,7 +28,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-version=$(python version.py --delimiter=_)
-echo "version: ${version}"
+#version=$(python version.py --delimiter=_)
+#echo "version: ${version}"
 
-python ./scripts/make_link_files.py ${version}
+python ./scripts/make_link_files.py latest

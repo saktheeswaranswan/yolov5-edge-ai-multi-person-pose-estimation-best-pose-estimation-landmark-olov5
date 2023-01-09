@@ -1,7 +1,10 @@
 # base ----------------------------------------
-matplotlib>=3.2.2
+wheel
+cython
 numpy>=1.18.5
-opencv-python>=4.1.2
+matplotlib>=3.2.2
+protobuf==3.19
+opencv-python==4.2.0.34
 #Pillow
 pillow-simd
 PyYAML>=5.3.1
@@ -17,7 +20,9 @@ seaborn>=0.11.0
 pandas
 
 # export --------------------------------------
-#onnxsim
+protobuf==3.19
+onnx==1.8.1
+onnxsim==0.4.10
 # scikit-learn==0.19.2  # for coreml quantization
 
 # extras --------------------------------------
