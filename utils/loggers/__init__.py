@@ -40,10 +40,12 @@ class Loggers():
         # Message
         try:
             import wandb
-        except ImportError:
+            assert hasattr(wandb, '__version__')  # verify package import not local dir
+        except (ImportError, AssertionError):
             prefix = colorstr('Weights & Biases: ')
             s = f"{prefix}run 'pip install wandb' to automatically track and visualize YOLOv5 🚀 runs (RECOMMENDED)"
             print(emojis(s))
+            wandb = None
 
         # TensorBoard
         s = self.save_dir
