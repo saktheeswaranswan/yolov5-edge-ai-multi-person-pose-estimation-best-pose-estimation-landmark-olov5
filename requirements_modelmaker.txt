@@ -22,7 +22,7 @@ pandas
 # export --------------------------------------
 protobuf==3.19
 onnx==1.8.1
-onnxsim==0.4.10
+onnxsim==0.4.33
 # scikit-learn==0.19.2  # for coreml quantization
 
 # extras --------------------------------------
